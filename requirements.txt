@@ -1,0 +1,11 @@
+# Install a CUDA build of PyTorch first, then:
+#   pip install -r requirements.txt
+#
+# CPU-only PyTorch cannot run QLoRA. See README.md for the install command.
+
+transformers>=4.51
+datasets>=3.2
+accelerate>=1.4
+peft>=0.15
+trl>=0.16
+bitsandbytes>=0.45

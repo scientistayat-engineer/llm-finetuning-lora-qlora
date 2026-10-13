@@ -1,0 +1,9 @@
+outputs/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.hf_cache/
+wandb/
+.ipynb_checkpoints/

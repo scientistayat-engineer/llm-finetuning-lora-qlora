@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fine-tuning, LoRA, and QLoRA</title>
+  <style>
+    @page {
+      size: 13.333in 7.5in;
+      margin: 0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #e7e2d8;
+      color: #1c1a16;
+      font-family: "Segoe UI", Calibri, sans-serif;
+    }
+
+    .slide {
+      width: 13.333in;
+      height: 7.5in;
+      padding: 0.52in 0.62in 0.42in;
+      background: #f7f4ee;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .slide:last-child {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    .kicker {
+      margin: 0 0 0.12in;
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #6d675c;
+      font-weight: 650;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 54px;
+      line-height: 1.05;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+      max-width: 10.5in;
+    }
+
+    h2 {
+      margin: 0 0 0.14in;
+      font-size: 32px;
+      line-height: 1.15;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+
+    .lede {
+      margin: 0.22in 0 0;
+      max-width: 9.2in;
+      font-size: 22px;
+      line-height: 1.4;
+      color: #3f3b34;
+    }
+
+    p { margin: 0; }
+
+    .body {
+      margin: 0 0 0.18in;
+      max-width: 12in;
+      font-size: 16px;
+      line-height: 1.45;
+      color: #3a362f;
+    }
+
+    .footer {
+      position: absolute;
+      left: 0.62in;
+      right: 0.62in;
+      bottom: 0.28in;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #7a7468;
+    }
+
+    .rule {
+      width: 0.72in;
+      height: 3px;
+      background: #1f4b3a;
+      margin: 0.28in 0 0.34in;
+    }
+
+    .three {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.22in;
+      margin-top: 0.9in;
+    }
+
+    .three h3, .pair h3, .stack h3 {
+      margin: 0 0 0.06in;
+      font-size: 16px;
+      font-weight: 650;
+    }
+
+    .three p, .pair p, .stack p {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #4a453c;
+    }
+
+    .label {
+      display: inline-block;
+      margin-bottom: 0.08in;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #1f4b3a;
+    }
+
+    .example {
+      background: #fffdf9;
+      border-top: 3px solid #1f4b3a;
+      padding: 0.16in 0.18in 0.14in;
+    }
+
+    .example + .example { margin-top: 0.12in; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.2in;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.16in;
+    }
+
+    .line {
+      margin: 0.04in 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .who {
+      color: #6d675c;
+      font-weight: 650;
+    }
+
+    .quote {
+      color: #1c1a16;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th {
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6d675c;
+      font-weight: 700;
+      padding: 0.08in 0.1in 0.08in 0;
+      border-bottom: 1px solid #d9d2c6;
+    }
+
+    td {
+      padding: 0.09in 0.12in 0.09in 0;
+      border-bottom: 1px solid #ece6dc;
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+
+    code, .cmd {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+
+    .cmd {
+      margin-top: 0.16in;
+      padding: 0.1in 0.14in;
+      background: #1c1a16;
+      color: #f7f4ee;
+    }
+
+    .note {
+      margin-top: 0.12in;
+      font-size: 13px;
+      color: #6d675c;
+      line-height: 1.4;
+    }
+
+    .cover-foot {
+      position: absolute;
+      left: 0.62in;
+      right: 0.62in;
+      bottom: 0.42in;
+      display: flex;
+      gap: 0.4in;
+    }
+
+    .cover-foot strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 0.04in;
+    }
+
+    .cover-foot span {
+      font-size: 13px;
+      color: #5c574e;
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="slide">
+    <p class="kicker">Briefing</p>
+    <h1>Fine-tuning, LoRA, and QLoRA</h1>
+    <div class="rule"></div>
+    <p class="lede">How a pretrained language model learns a specific job, and two ways to train it without touching every weight.</p>
+    <div class="cover-foot">
+      <div>
+        <strong>Fine-tuning</strong>
+        <span>Keep training on your own examples.</span>
+      </div>
+      <div>
+        <strong>LoRA</strong>
+        <span>A small adapter on a 16-bit model.</span>
+      </div>
+      <div>
+        <strong>QLoRA</strong>
+        <span>The same adapter, with a 4-bit model.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">01 — Fine-tuning</p>
+    <h2>What fine-tuning is</h2>
+    <p class="body">A pretrained model already knows general language. Fine-tuning keeps training it on a smaller set of examples that look like the job you want. The saved weights change, so the new behavior stays with the model.</p>
+    <div class="grid-3">
+      <div>
+        <h3>Prompting</h3>
+        <p>You change the words sent with each request. The saved model stays as it was.</p>
+      </div>
+      <div>
+        <h3>Retrieval</h3>
+        <p>You attach source documents at answer time. The saved model stays as it was.</p>
+      </div>
+      <div>
+        <h3>Fine-tuning</h3>
+        <p>You continue training. The saved weights carry the new behavior.</p>
+      </div>
+    </div>
+    <div class="example" style="margin-top: 0.28in;">
+      <div class="label">Example</div>
+      <p class="line"><span class="who">Ask: </span><span class="quote">Describe a matte black desk lamp.</span></p>
+      <p class="line"><span class="who">Before: </span><span class="quote">This stunning lamp will transform your workspace and elevate every evening.</span></p>
+      <p class="line"><span class="who">After training on calm product lines: </span><span class="quote">A matte black desk lamp with a low arm and a warm, even pool of light. It stays out of the way and lights the page.</span></p>
+    </div>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>2</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">02 — Types</p>
+    <h2>Which parameters move</h2>
+    <p class="body">Full fine-tuning updates every weight. Parameter-efficient fine-tuning freezes those weights and trains a small add-on. LoRA and QLoRA are the second kind.</p>
+    <div class="grid-2">
+      <div class="example">
+        <div class="label">Example — full fine-tuning</div>
+        <p class="line">A 7-billion-parameter model has about 7 billion trainable numbers.</p>
+        <p class="line">You update all of them on your support chats.</p>
+        <p class="line">You save a new full model, about 14 GB in 16-bit.</p>
+      </div>
+      <div class="example">
+        <div class="label">Example — parameter-efficient</div>
+        <p class="line">The same 7 billion numbers stay frozen.</p>
+        <p class="line">You train an adapter of a few million numbers instead.</p>
+        <p class="line">You save the adapter, often tens of megabytes, and keep the original model.</p>
+      </div>
+    </div>
+    <p class="note">Prefix tuning and bottleneck adapters are other parameter-efficient methods. This briefing stays with LoRA and QLoRA.</p>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>3</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">03 — Types</p>
+    <h2>What the examples teach</h2>
+    <p class="body">The training signal is a separate choice from how many weights move. The same LoRA run can use any of these data styles. This project uses the first one.</p>
+    <div class="grid-3">
+      <div class="example">
+        <div class="label">Supervised fine-tuning</div>
+        <p class="line"><span class="who">User: </span>Describe a linen notebook cover.</p>
+        <p class="line"><span class="who">Assistant: </span>A linen notebook cover in a natural weave. It takes on a soft crease with use.</p>
+        <p class="note">A prompt paired with the answer you want. Instruction tuning is this, on instruction-style pairs.</p>
+      </div>
+      <div class="example">
+        <div class="label">Continued pretraining</div>
+        <p class="line">The cover cloth is linen, 240 gsm, sewn onto boards. The thread is cotton. The endpaper is left blank.</p>
+        <p class="note">More raw text from a field. There is no question and no labeled answer.</p>
+      </div>
+      <div class="example">
+        <div class="label">Preference tuning</div>
+        <p class="line"><span class="who">Ask: </span>Describe a wool throw.</p>
+        <p class="line"><span class="who">Chosen: </span>A wool throw in a plain weave. It folds flat at the end of a sofa.</p>
+        <p class="line"><span class="who">Rejected: </span>This amazing blanket will change your life.</p>
+        <p class="note">The model is trained to prefer the answer a person would choose. DPO uses pairs like this. RLHF uses a reward score.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>4</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">04 — LoRA</p>
+    <h2>A small update beside a frozen layer</h2>
+    <p class="body">Low-Rank Adaptation leaves the original weight matrix W frozen. It trains two thin matrices, A and B, whose product stands in for a change to that layer. The rank r is the thin dimension. Here r = 16.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Piece</th>
+          <th>Role</th>
+          <th>Shape</th>
+          <th class="num">Values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>W</td>
+          <td>Original layer, frozen, 16-bit</td>
+          <td>1024 × 1024</td>
+          <td class="num">1,048,576</td>
+        </tr>
+        <tr>
+          <td>A</td>
+          <td>Trained</td>
+          <td>1024 × 16</td>
+          <td class="num">16,384</td>
+        </tr>
+        <tr>
+          <td>B</td>
+          <td>Trained</td>
+          <td>16 × 1024</td>
+          <td class="num">16,384</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">The layer still computes a 1024 × 1024 transform. Training touches 32,768 numbers, about 3% of W. The forward pass adds the adapter: output = Wx + BAx.</p>
+    <div class="cmd">python train.py --method lora --train-file data/sample_train.jsonl</div>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>5</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">05 — QLoRA</p>
+    <h2>The same adapter, with W stored in 4-bit</h2>
+    <p class="body">QLoRA keeps the LoRA example above and quantizes the frozen matrix. A and B still train in 16-bit. Only the stored base weights shrink.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Storage of W</th>
+          <th>Bits per value</th>
+          <th class="num">Bytes for this layer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LoRA base</td>
+          <td>16</td>
+          <td class="num">2,097,152 bytes (2.0 MB)</td>
+        </tr>
+        <tr>
+          <td>QLoRA base, NF4</td>
+          <td>4</td>
+          <td class="num">524,288 bytes (0.5 MB)</td>
+        </tr>
+        <tr>
+          <td>Adapter A and B, either method</td>
+          <td>16</td>
+          <td class="num">65,536 bytes (64 KB)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">On a full 7B model the same ratio applies to the weights: about 14 GB in 16-bit, about 4 GB in 4-bit, before activations and the optimizer. NormalFloat4 is the 4-bit type. Double quantization compresses the scale constants a second time.</p>
+    <div class="cmd">python train.py --method qlora --train-file data/sample_train.jsonl</div>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>6</span></div>
+  </section>
+
+  <section class="slide">
+    <p class="kicker">06 — Choose</p>
+    <h2>LoRA or QLoRA</h2>
+    <p class="body">Same supervised examples. Same adapter. The choice is whether the frozen base model is stored in 16-bit or 4-bit.</p>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Full fine-tuning</th>
+          <th>LoRA</th>
+          <th>QLoRA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Trained</td>
+          <td>All weights</td>
+          <td>Adapter only</td>
+          <td>Adapter only</td>
+        </tr>
+        <tr>
+          <td>Base precision</td>
+          <td>16-bit</td>
+          <td>16-bit</td>
+          <td>4-bit</td>
+        </tr>
+        <tr>
+          <td>Saved result</td>
+          <td>Full model</td>
+          <td>Adapter</td>
+          <td>Adapter</td>
+        </tr>
+        <tr>
+          <td>Use when</td>
+          <td>Compute is plentiful</td>
+          <td>The 16-bit model fits</td>
+          <td>You need a larger model on one GPU</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="grid-2" style="margin-top: 0.22in;">
+      <div class="example">
+        <div class="label">Example — LoRA</div>
+        <p class="line">Qwen2.5-0.5B-Instruct fits easily in 16-bit. Train the adapter there when you want the frozen weights at full precision.</p>
+      </div>
+      <div class="example">
+        <div class="label">Example — QLoRA</div>
+        <p class="line">Qwen2.5-7B-Instruct is the case for 4-bit. The adapter is unchanged. The base is what gets smaller.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Fine-tuning, LoRA, and QLoRA</span><span>7</span></div>
+  </section>
+
+</body>
+</html>
